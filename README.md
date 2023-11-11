@@ -1,8 +1,6 @@
 # TAMS
 Trajectory Analysis and Mining Software
 
-# pre requisites
-
 # Installation Guide:
 ### Install [gawk](https://www.gnu.org/software/gawk/)
 
@@ -13,6 +11,8 @@ Usage instructions:
 - Download TAMS_executable
 - Make it executable by executing the command
 - `chmod u+x TAMS_executable`
+- Create a directory named 'RESULTS' in the directory where the file 'TAMS_executable' is stored:
+- `mkdir RESULTS`
 
 
 # Run TAMS_executable as follows:
@@ -28,4 +28,9 @@ Usage instructions:
 - Third group     = (Optional) Column number of the third subgroup
 - Nr_of_groups    = (Optional) The number of groups to divide the third subgroup in
 
-Example: ./TAMS_executable 2 DATASET_Exercise.csv 30 8 2 7 4 27 4
+Example: 
+`./TAMS_executable 0 Example_dataset.csv 6 4 2`
+
+# License
+
+This project is covered under the **Apache 2.0 License**.
