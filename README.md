@@ -41,6 +41,27 @@ Usage instructions:
 Example: 
 `./TAMS_executable 0 Example_dataset.csv 6 4 2`
 
+# Expected output from the Example dataset:
+```
+Dataset = Example_dataset
+Parameter name = PainIntensity
+Number of subjects = 20
+Number of measurements = 1014
+Number of studies = 1
+Name of studies = Example_dataset
+ 
+Sex     Participants   	Follow-Ups     	Persistent     	Progressing    	Rapidly    Gradually	SingleEpisodic 	Episodic    Fluctuating    
+Male          9	             448	     1	             1	           1	       2	       1	    2	        1
+Female       11	             566	     1	             1	           1	       1	       1	    3	        3
+Totals       20	            1014	     2	             2	           2	       3	       2	    5	        4
+
+Number of classified patients: 20
+Number of rest patients: 
+```
+
+# Expected runtime:
+0.11 seconds
+
 # License
 
 This project is covered under the **GNU 3.0 License**.
