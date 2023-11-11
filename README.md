@@ -1,6 +1,16 @@
 # TAMS
 Trajectory Analysis and Mining Software
 
+# System Requirements
+## Hardware requirements
+`TAMS` package requires only a standard computer with enough RAM to support the in-memory operations.
+
+## Software requirements
+### OS Requirements
+This package is supported for *macOS* and *Linux*. The package has been tested on the following systems:
++ macOS: Monterey (12.5)
++ Linux: Ubuntu 16.04
+
 # Installation Guide:
 ### Install [gawk](https://www.gnu.org/software/gawk/)
 
