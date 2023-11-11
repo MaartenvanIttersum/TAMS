@@ -23,13 +23,6 @@ if [ $# -lt 5 ] ; then
 	echo " "
 	echo "  Example: $0 2 DATASET_Exercise.csv 30 8 2 7 4 27 4"
 	echo " "
-	echo "  Some interesting columns in the LBP IPD dataset are:"
-	echo "  8 = Sex"
-	echo "  7 = Age"
-	echo "  27 = BMI"
-	echo "  30 = Pain"
-	echo "  31 = Baseline Roland Morris Disability Questionnaire sum"
-        exit;
         exit;
 fi
 
@@ -751,7 +744,9 @@ function assess_First_Trajectory(data_array, FUcnt1, patientId){
 								detectedEpisoded++;
 								EPI_FLAG=1;
 	                					EPIweek=EPIcounter-4;
-	                					EpisodeMean=EPItotal/EPIweek;
+								if(EPIweek!=0){
+	                						EpisodeMean=EPItotal/EPIweek;
+								}
 	                					EpisodeDescriptionString[patientId]=EpisodeDescriptionString[patientId]","detectedEpisoded","EPIweek","EpisodeMean;
 	                                                        painFree4Weeks=1;
 	                                                        if(multipleEpisodes==0){
@@ -839,8 +834,9 @@ function assess_First_Trajectory(data_array, FUcnt1, patientId){
 	        }
 	
 	                EPIweek=EPIcounter;
-	                EpisodeMean=EPItotal/EPIweek;
-	
+			if(EPIweek!=0){
+	                	EpisodeMean=EPItotal/EPIweek;
+			}	
 			if(EPI_FLAG==1&&currentValue==0){
 				resolved=1;
 			}else{
@@ -1093,10 +1089,10 @@ function createFirstSubGroup(input_array, cnt){
 	if(prevSubjectId!=""){
 		trajectory1[prevSubjectId]=assess_First_Trajectory(trajectory_array1,firstPartFUcnt,prevSubjectId);
 	}
-	printf("%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%15s\t%-15s\t%-15s\t%-15s\n",parameter_name_array[FG],"Participants","Follow-Ups","Persistent","Fluctuating","Episodic","SingleEpisodic","Rapidly","Gradually","Progressive");
-	print "AGREGATEDATA "parameter_name_array[FG]",Participants,Follow-Ups,Persistent,Fluctuating,Episodic,SingleEpisodic,Rapidly,Gradually,Progressive";
+	printf("%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%15s\t%-15s\t%-15s\t%-15s\n",parameter_name_array[FG],"Participants","Follow-Ups","Persistent","Progressing","Rapidly","Gradually","SingleEpisodic","Episodic","Fluctuating");
+	print "AGREGATEDATA "parameter_name_array[FG]",Participants,Follow-Ups,Ongoing,Progressive,Rapidly,Gradually,SingleEpisodic,Episodic,Fluctuating";
 
-	print "\n"
+#	print "\n"
 	for(groups=0;groups<FGN;groups++){
                 for(subjects=0;subjects<uniqueSubjectCNT[groups];subjects++){
                 	subject=uniqueSubList[groups,subjects];
@@ -1198,11 +1194,13 @@ function createFirstSubGroup(input_array, cnt){
 				PatientsWithOneMeasurement++;
 			}
 
+combinedTrajectory[subject]=Super;
+
 		print "RAWDATA "subject","id","id","Super","groups;
 	}
 
-		printf("%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\n",\
-			"Group","Ongoing","Progressing","Rapidly","Gradually","Single","Episodic","Fluctuating");
+#		printf("%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\t%-19s\n",\
+#			"Group","Ongoing","Progressing","Rapidly","Gradually","Single","Episodic","Fluctuating");
 
                 if(parameter_name_array[FG]=="Sex"){
                 	if(groups==0){ labelFirstGroup="Male"; 
@@ -1218,43 +1216,47 @@ function createFirstSubGroup(input_array, cnt){
                 }
 		if(uniqueSubjectCNT[groups]!=0){
 
-			GROUP_TOTAL[groups]=Persistent[groups]+Progressive[groups]+Rapidly[groups]+Gradual[groups]+SingleEpisodic[groups]+Episodic[groups]+Fluctuating[groups];
-			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
-				labelFirstGroup,Persistent[groups],(Persistent[groups]/GROUP_TOTAL[groups])*100,\
-				Progressive[groups],(Progressive[groups]/GROUP_TOTAL[groups])*100,\
-				Rapidly[groups],(Rapidly[groups]/GROUP_TOTAL[groups])*100,\
-				Gradual[groups],(Gradual[groups]/GROUP_TOTAL[groups])*100,\
-				SingleEpisodic[groups],(SingleEpisodic[groups]/GROUP_TOTAL[groups])*100,\
-				Episodic[groups],(Episodic[groups]/GROUP_TOTAL[groups])*100,\
-				Fluctuating[groups],(Fluctuating[groups]/GROUP_TOTAL[groups])*100);	
+			printf("%-15s\t%8s\t%8s\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\n", \
+				labelFirstGroup,uniqueSubjectCNT[groups],FGsubgroupCNT[groups],Persistent[groups],Progressive[groups],Rapidly[groups],\
+				Gradual[groups],SingleEpisodic[groups],Episodic[groups],Fluctuating[groups]);
 
-			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
-                                "  Severe",severe_ongoing[groups],(severe_ongoing[groups]/GROUP_TOTAL[groups])*100,severe_progressive[groups],\
-				(severe_progressive[groups]/GROUP_TOTAL[groups])*100,severe_rapidly[groups],(severe_rapidly[groups]/GROUP_TOTAL[groups])*100,\
-				severe_gradual[groups],(severe_gradual[groups]/GROUP_TOTAL[groups])*100,severe_single_episodic[groups], \
-				(severe_single_episodic[groups]/GROUP_TOTAL[groups])*100,severe_episodic[groups],(severe_episodic[groups]/GROUP_TOTAL[groups])*100, \
-				severe_fluctuating[groups],(severe_fluctuating[groups]/GROUP_TOTAL[groups])*100);
+#			GROUP_TOTAL[groups]=Persistent[groups]+Progressive[groups]+Rapidly[groups]+Gradual[groups]+SingleEpisodic[groups]+Episodic[groups]+Fluctuating[groups];
+#			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
+#				labelFirstGroup,Persistent[groups],(Persistent[groups]/GROUP_TOTAL[groups])*100,\
+#				Progressive[groups],(Progressive[groups]/GROUP_TOTAL[groups])*100,\
+#				Rapidly[groups],(Rapidly[groups]/GROUP_TOTAL[groups])*100,\
+#				Gradual[groups],(Gradual[groups]/GROUP_TOTAL[groups])*100,\
+#				SingleEpisodic[groups],(SingleEpisodic[groups]/GROUP_TOTAL[groups])*100,\
+#				Episodic[groups],(Episodic[groups]/GROUP_TOTAL[groups])*100,\
+#				Fluctuating[groups],(Fluctuating[groups]/GROUP_TOTAL[groups])*100);	
 
-			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
-                                "  Moderate",moderate_ongoing[groups],(moderate_ongoing[groups]/GROUP_TOTAL[groups])*100,moderate_progressive[groups],\
-				(moderate_progressive[groups]/GROUP_TOTAL[groups])*100,moderate_rapidly[groups],(moderate_rapidly[groups]/GROUP_TOTAL[groups])*100,\
-				moderate_gradual[groups],(moderate_gradual[groups]/GROUP_TOTAL[groups])*100,moderate_single_episodic[groups], \
-				(moderate_single_episodic[groups]/GROUP_TOTAL[groups])*100,moderate_episodic[groups],(moderate_episodic[groups]/GROUP_TOTAL[groups])*100, \
-				moderate_fluctuating[groups],(moderate_fluctuating[groups]/GROUP_TOTAL[groups])*100);
-
-			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
-                                "  Mild",mild_ongoing[groups],(mild_ongoing[groups]/GROUP_TOTAL[groups])*100,mild_progressive[groups],\
-				(mild_progressive[groups]/GROUP_TOTAL[groups])*100,mild_rapidly[groups],(mild_rapidly[groups]/GROUP_TOTAL[groups])*100,\
-				mild_gradual[groups],(mild_gradual[groups]/GROUP_TOTAL[groups])*100,mild_single_episodic[groups], \
-				(mild_single_episodic[groups]/GROUP_TOTAL[groups])*100,mild_episodic[groups],(mild_episodic[groups]/GROUP_TOTAL[groups])*100, \
-				mild_fluctuating[groups],(mild_fluctuating[groups]/GROUP_TOTAL[groups])*100);
-
-			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
-                                "  Minor",minor_ongoing[groups],(minor_ongoing[groups]/GROUP_TOTAL[groups])*100,minor_progressive[groups],\
-				(minor_progressive[groups]/GROUP_TOTAL[groups])*100,minor_rapidly[groups],(minor_rapidly[groups]/GROUP_TOTAL[groups])*100,\
-				minor_gradual[groups],(minor_gradual[groups]/GROUP_TOTAL[groups])*100,minor_single_episodic[groups], \
-				(minor_single_episodic[groups]/GROUP_TOTAL[groups])*100,minor_episodic[groups],(minor_episodic[groups]/GROUP_TOTAL[groups])*100, \
-				minor_fluctuating[groups],(minor_fluctuating[groups]/GROUP_TOTAL[groups])*100);
+#			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
+#                                "  Severe",severe_ongoing[groups],(severe_ongoing[groups]/GROUP_TOTAL[groups])*100,severe_progressive[groups],\
+#				(severe_progressive[groups]/GROUP_TOTAL[groups])*100,severe_rapidly[groups],(severe_rapidly[groups]/GROUP_TOTAL[groups])*100,\
+#				severe_gradual[groups],(severe_gradual[groups]/GROUP_TOTAL[groups])*100,severe_single_episodic[groups], \
+#				(severe_single_episodic[groups]/GROUP_TOTAL[groups])*100,severe_episodic[groups],(severe_episodic[groups]/GROUP_TOTAL[groups])*100, \
+#				severe_fluctuating[groups],(severe_fluctuating[groups]/GROUP_TOTAL[groups])*100);
+#
+#			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
+#                                "  Moderate",moderate_ongoing[groups],(moderate_ongoing[groups]/GROUP_TOTAL[groups])*100,moderate_progressive[groups],\
+#				(moderate_progressive[groups]/GROUP_TOTAL[groups])*100,moderate_rapidly[groups],(moderate_rapidly[groups]/GROUP_TOTAL[groups])*100,\
+#				moderate_gradual[groups],(moderate_gradual[groups]/GROUP_TOTAL[groups])*100,moderate_single_episodic[groups], \
+#				(moderate_single_episodic[groups]/GROUP_TOTAL[groups])*100,moderate_episodic[groups],(moderate_episodic[groups]/GROUP_TOTAL[groups])*100, \
+#				moderate_fluctuating[groups],(moderate_fluctuating[groups]/GROUP_TOTAL[groups])*100);
+#
+#			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
+#                                "  Mild",mild_ongoing[groups],(mild_ongoing[groups]/GROUP_TOTAL[groups])*100,mild_progressive[groups],\
+#				(mild_progressive[groups]/GROUP_TOTAL[groups])*100,mild_rapidly[groups],(mild_rapidly[groups]/GROUP_TOTAL[groups])*100,\
+#				mild_gradual[groups],(mild_gradual[groups]/GROUP_TOTAL[groups])*100,mild_single_episodic[groups], \
+#				(mild_single_episodic[groups]/GROUP_TOTAL[groups])*100,mild_episodic[groups],(mild_episodic[groups]/GROUP_TOTAL[groups])*100, \
+#				mild_fluctuating[groups],(mild_fluctuating[groups]/GROUP_TOTAL[groups])*100);
+#
+#			printf("%-15s\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\t%8s %8.1f%%\n", \
+#                                "  Minor",minor_ongoing[groups],(minor_ongoing[groups]/GROUP_TOTAL[groups])*100,minor_progressive[groups],\
+#				(minor_progressive[groups]/GROUP_TOTAL[groups])*100,minor_rapidly[groups],(minor_rapidly[groups]/GROUP_TOTAL[groups])*100,\
+#				minor_gradual[groups],(minor_gradual[groups]/GROUP_TOTAL[groups])*100,minor_single_episodic[groups], \
+#				(minor_single_episodic[groups]/GROUP_TOTAL[groups])*100,minor_episodic[groups],(minor_episodic[groups]/GROUP_TOTAL[groups])*100, \
+#				minor_fluctuating[groups],(minor_fluctuating[groups]/GROUP_TOTAL[groups])*100);
 
 		}
 		totUniqueSubjects+=uniqueSubjectCNT[groups];
@@ -1298,7 +1300,8 @@ function createFirstSubGroup(input_array, cnt){
 		print "\n";
 
 	if(NUMBER_OF_SUBGROUPS==1){
-		print "Number of classified patients: "TOTpersistent+TOTfluctuating+TOTepisodic+TOTsingle+TOTrapidly+TOTgradually+TOTprogres;
+		print "Number of classified patients: "PatientsWithPersistentPain+PatientsWithProgressivePain+PatientsWithRapidlyImprovingPain+\
+                        PatientsWithGradualyImprovingPain+PatientsWithSingleEpisodicPain+PatientsWithEpisodicPain+PatientsWithFluctuatingPain;
 		print "Number of rest patients: "RESTpatients;
 	}
 	return;
@@ -1342,11 +1345,12 @@ function createSecondSubgroup(input_array2){
         }
 
 # Title
-	if(NUMBER_OF_SUBGROUPS!=3){
+#	if(NUMBER_OF_SUBGROUPS!=3){
                 printf("%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\n",\
                         parameter_name_array[FG],parameter_name_array[SG],"Participants","Follow-Ups"\
-                        ,"Persistent","Fluctuating","Episodic","Single","Rapidly","Gradually","Progressing");
-	}
+			,"Persistent","Progressing","Rapidly","Gradually","SingleEpisodic","Episodic","Fluctuating");
+#                        ,"Persistent","Fluctuating","Episodic","Single","Rapidly","Gradually","Progressing");
+#	}
 
         for(sg1=0;sg1<FGN;sg1++){
                 for(sg2=0;sg2<SGN;sg2++){
@@ -1402,18 +1406,29 @@ function createSecondSubgroup(input_array2){
                                 labelSecondGroup=int(secondGroupLimit_array[sg2,0])" - "int(secondGroupLimit_array[sg2,1]);
                         }
                 	if(uniqueSubjectCNT2[sg1,sg2]!=0){
+
+#				printf("%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\n",\
+        			printf("%-15s\t%-15s\t%8s\t%8s\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\n", \
+					labelFirstGroup,labelSecondGroup,uniqueSubjectCNT2[sg1,sg2], \
+                                        SGsubgroupCNT[sg1,sg2],Persistent[sg1,sg2],Progres[sg1,sg2], \
+					Rapidly[sg1,sg2],Gradually[sg1,sg2],SingleEpisodic[sg1,sg2], \
+					Episodic[sg1,sg2],Fluctuating[sg1,sg2]);
+
+
+
+
 				TOTAL_2DIMENSIONS[sg1,sg2]=Persistent[sg1,sg2]+Fluctuating[sg1,sg2]+Episodic[sg1,sg2]+SingleEpisodic[sg1,sg2]+\
 							Rapidly[sg1,sg2]+Gradually[sg1,sg2]+Progres[sg1,sg2];
-
-                        	printf("%-15s\t%-15s\t%8s\t%8s\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\n",\
-					labelFirstGroup,labelSecondGroup,TOTAL_2DIMENSIONS[sg1,sg2], \
-					SGsubgroupCNT[sg1,sg2],(Persistent[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100,\
-                                	(Fluctuating[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
-					(Episodic[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
-					(SingleEpisodic[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
-					(Rapidly[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
-					(Gradually[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100,\
-					(Progres[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100);
+				if(TOTAL_2DIMENSIONS[sg1,sg2]!=0){
+#                        	printf("%-15s\t%-15s\t%8s\t%8s\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\n",\
+#					labelFirstGroup,labelSecondGroup,TOTAL_2DIMENSIONS[sg1,sg2], \
+#					SGsubgroupCNT[sg1,sg2],(Persistent[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100,\
+#                                	(Fluctuating[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
+#					(Episodic[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
+#					(SingleEpisodic[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
+#					(Rapidly[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100, \
+#					(Gradually[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100,\
+#					(Progres[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])*100);
 
 				print "AGREGATEDATA "labelFirstGroup","labelSecondGroup","TOTAL_2DIMENSIONS[sg1,sg2]\
 					","SGsubgroupCNT[sg1,sg2]","(Persistent[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])\
@@ -1423,13 +1438,13 @@ function createSecondSubgroup(input_array2){
 					","(Rapidly[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])\
 					","(Gradually[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2])\
 					","(Progres[sg1,sg2]/TOTAL_2DIMENSIONS[sg1,sg2]);
+				}
 			}
                 }
                 totUniqueSubjects+=uniqueSubjectCNT2[sg1,sg2]
                 totFGSubjects+=FGsubgroupCNT[sg1,sg2];
         }
 
-		print "\n";
 	if(NUMBER_OF_SUBGROUPS==2){
         	printf("%-15s\t%-15s\t%8s\t%8s\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\n", \
 			"Totals","",(PatientsWithPersistentPain2+PatientsWithFluctuatingPain2+PatientsWithEpisodicPain2+\
@@ -1439,6 +1454,8 @@ function createSecondSubgroup(input_array2){
 				PatientsWithFluctuatingPain2,PatientsWithEpisodicPain2,\
 				PatientsWithSingleEpisodicPain2,PatientsWithRapidlyPain2,\
 				PatientsWithGraduallyPain2,PatientsWithProgressingPain2);
+
+		print "\n";
         	print "Number of classified patients: "PatientsWithPersistentPain2+PatientsWithFluctuatingPain2+PatientsWithEpisodicPain2+PatientsWithSingleEpisodicPain2+PatientsWithRapidlyPain2+PatientsWithGraduallyPain2+PatientsWithProgressingPain2;
         	print "Number of rest patients: "RestPatients2;
         	print "Number of patients with one pain measurement: "PatientsWithOneMeasurement2;
@@ -1479,7 +1496,8 @@ function createThirdSubgroup(input_array3){
     	}
                 printf("%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\t%-15s\n",\
                         parameter_name_array[FG],parameter_name_array[SG],parameter_name_array[TG],"Participants","Follow-Ups"\
-                        ,"Persistent","Fluctuating","Episodic","SingleEpisodic","Rapidly","Gradually","Progressing");
+                        ,"Persistent","Progressing","Rapidly","Gradually","SingleEpisodic","Episodic","Fluctuating");
+#                        ,"Persistent","Fluctuating","Episodic","SingleEpisodic","Rapidly","Gradually","Progressing");
 
        	for(subgroup1=0;subgroup1<FGN;subgroup1++){ 
         	for(subgroup2=0;subgroup2<SGN;subgroup2++){
@@ -1579,15 +1597,22 @@ function createThirdSubgroup(input_array3){
 						Episodic3[subgroup1,subgroup2,subgroup3]+SingleEpisodic3[subgroup1,subgroup2,subgroup3]+Rapidly3[subgroup1,subgroup2,subgroup3]+\
 						Gradually3[subgroup1,subgroup2,subgroup3]+Progres3[subgroup1,subgroup2,subgroup3];
 
-                                        printf("%-15s\t%-15s\t%-15s\t%8s\t%8s\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\n",\
-					labelFirstGroup,labelSecondGroup,labelThirdGroup,TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3],thirdGroupCNT[subgroup1,subgroup2,subgroup3],\
-					(Persistent3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(Fluctuating3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(Episodic3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(SingleEpisodic3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(Rapidly3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(Gradually3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
-					(Progres3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100);
+#                                        printf("%-15s\t%-15s\t%-15s\t%8s\t%8s\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\t%8.1f\n",\
+#					labelFirstGroup,labelSecondGroup,labelThirdGroup,TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3],thirdGroupCNT[subgroup1,subgroup2,subgroup3],\
+#					(Persistent3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(Fluctuating3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(Episodic3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(SingleEpisodic3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(Rapidly3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(Gradually3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100,\
+#					(Progres3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])*100);
+
+                                        printf("%-15s\t%-15s\t%-15s\t%8s\t%8s\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\t%8.0f\n",\
+						labelFirstGroup,labelSecondGroup,labelThirdGroup,TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3],thirdGroupCNT[subgroup1,subgroup2,subgroup3],\
+						Persistent3[subgroup1,subgroup2,subgroup3],Progres3[subgroup1,subgroup2,subgroup3], \
+						Rapidly3[subgroup1,subgroup2,subgroup3],Gradually3[subgroup1,subgroup2,subgroup3], \
+						SingleEpisodic3[subgroup1,subgroup2,subgroup3],Episodic3[subgroup1,subgroup2,subgroup3], \
+						Fluctuating3[subgroup1,subgroup2,subgroup3]);
 	
 					print "AGREGATEDATA "labelFirstGroup","labelSecondGroup","labelThirdGroup","TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3]\
 						","thirdGroupCNT[subgroup1,subgroup2,subgroup3]","(Persistent3[subgroup1,subgroup2,subgroup3]/TOTAL_3DIMENSIONAL[subgroup1,subgroup2,subgroup3])\
@@ -1669,6 +1694,7 @@ BEGIN{
 	studyName[21]="Verma"; 
 	
 	studyName[22]="Nordic_LBP_subpopulation";
+	studyName[25]="Example_dataset";
 }{
         if(NR==1){ 
                 for(i=0;i<=NF;i++){
@@ -1892,6 +1918,7 @@ elif [ ${SUBGROUP_NUMBER} -eq 2 ] ; then
 	AGREGATE_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_SA.csv
 	RAWDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_RAWDATA_SA.csv
 	PATIENTDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_PATIENTDATA_SA.csv
+	EPISODEDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_EPISODEDATA_SA.csv
 elif [ ${SUBGROUP_NUMBER} -eq 3 ] ; then
 	FIRST_GROUP=`grep "PROGRAMINFO FIRST subgroup" ${FILENAME}.output |awk -F, '{print $2}'`
 	SECOND_GROUP=`grep "PROGRAMINFO SECOND subgroup" ${FILENAME}.output |awk -F, '{print $2}'`
@@ -1899,6 +1926,7 @@ elif [ ${SUBGROUP_NUMBER} -eq 3 ] ; then
 	AGREGATE_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_${THIRD_GROUP_NUMBER}_${THIRD_GROUP}.csv
 	RAWDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_${THIRD_GROUP_NUMBER}_${THIRD_GROUP}_RAWDATA.csv
 	PATIENTDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_${THIRD_GROUP_NUMBER}_${THIRD_GROUP}_PATIENTDATA.csv
+	EPISODEDATA_FILENAME=${FILENAME}_${PARAM_NAME}_${SUBGROUP_NUMBER}_${FIRST_GROUP_NUMBER}_${FIRST_GROUP}_${SECOND_GROUP_NUMBER}_${SECOND_GROUP}_${THIRD_GROUP_NUMBER}_${THIRD_GROUP}_EPISODEDATA_SA.csv
 fi
 
 # 0=stdOut, 1=AgregateFile, 2=RawData, 3=Bruteforce 4=trajectory"
