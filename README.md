@@ -33,4 +33,4 @@ Example:
 
 # License
 
-This project is covered under the **Apache 2.0 License**.
+This project is covered under the **GNU 3.0 License**.
